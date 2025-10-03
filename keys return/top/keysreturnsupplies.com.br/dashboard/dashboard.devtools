@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NextSystem - Dashboard</title>
+            <link rel="icon" type="image/png" href="https://i.imgur.com/81xiGlQ.png">
+    <link rel="shortcut icon" href="https://i.imgur.com/81xiGlQ.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #0a0a0a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease-out;
+        }
+        
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid #333;
+            border-top: 3px solid #10b981;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .main-content {
+            opacity: 0;
+            transition: opacity 0.5s ease-in;
+        }
+        
+        .main-content.loaded {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body class="bg-[#0a0a0a] bg-[radial-gradient(#1a1a1a_1px,transparent_1px)] [background-size:16px_16px]">
+    <div class="bg-gradient-to-r from-emerald-500 to-emerald-600 text-white px-4 py-3 text-center shadow-lg">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span class="font-medium">Precisa de ajuda?</span>
+            <a href="https://discord.gg/nextsystemoficial" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 bg-white/20 hover:bg-white/30 text-white font-medium px-3 py-1 rounded-full transition-all duration-300 text-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515a.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0a12.64 12.64 0 0 0-.617-1.25a.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057a19.9 19.9 0 0 0 5.993 3.03a.078.078 0 0 0 .084-.028a14.09 14.09 0 0 0 1.226-1.994a.076.076 0 0 0-.041-.106a13.107 13.107 0 0 1-1.872-.892a.077.077 0 0 1-.008-.128a10.2 10.2 0 0 0 .372-.292a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127a12.299 12.299 0 0 1-1.873.892a.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028a19.839 19.839 0 0 0 6.002-3.03a.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.956-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.955-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.946 2.418-2.157 2.418z"/>
+                </svg>
+                Suporte no Discord
+            </a>
+        </div>
+    </div>
+    
+    <div class="loading-screen" id="loadingScreen">
+        <div class="loading-spinner"></div>
+    </div>
+    <div class="main-content" id="mainContent">
+    <div class="flex min-h-screen">
+        <div id="sidebar" class="fixed flex h-screen w-16 flex-col justify-between border-e border-[#333] bg-[#0a0a0a] backdrop-blur-sm bg-opacity-80 shadow-lg z-10 transition-all duration-300 md:translate-x-0">
+            <button id="sidebarToggle" class="md:hidden absolute -right-8 top-4 w-6 h-6 bg-[#0a0a0a] border border-[#333] rounded-full flex items-center justify-center text-emerald-500 shadow-lg backdrop-blur-sm transition-all duration-300 hover:bg-emerald-500 hover:text-white z-20">
+                <svg id="toggleIcon" class="w-3 h-3 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                </svg>
+            </button>
+            <div>
+                <div class="inline-flex size-16 items-center justify-center">
+                    <img src="https://i.imgur.com/81xiGlQ.png" alt="Logo" class="size-8 p-1.5 rounded-lg bg-[#1a1a1a] shadow-lg backdrop-blur-sm" style="object-fit: contain;">
+                </div>
+
+                <div class="border-t border-[#333]">
+                    <div class="px-2">
+                        <div class="py-4">
+                            <a href="/dashboard" class="group relative flex justify-center rounded-sm bg-emerald-500/10 px-2 py-1.5 text-emerald-500">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="size-5 opacity-75" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                                </svg>
+                                <span class="invisible absolute start-full top-1/2 ms-4 -translate-y-1/2 rounded-sm bg-[#1a1a1a] px-2 py-1.5 text-xs font-medium text-white group-hover:visible z-50">Dashboard</span>
+                            </a>
+                        </div>
+
+                        <ul class="space-y-1 border-t border-[#333] pt-4">
+                                                    </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sticky inset-x-0 bottom-0 border-t border-[#333] bg-[#0a0a0a] p-2">
+                <a href="#" onclick="logout()" class="group relative flex w-full justify-center rounded-lg px-2 py-1.5 text-sm text-gray-400 hover:bg-emerald-500/10 hover:text-emerald-500">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="size-5 opacity-75" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                    </svg>
+                    <span class="invisible absolute start-full top-1/2 ms-4 -translate-y-1/2 rounded-sm bg-[#1a1a1a] px-2 py-1.5 text-xs font-medium text-white group-hover:visible z-50">Logout</span>
+                </a>
+            </div>
+        </div>
+        
+        <div class="flex-1 flex flex-col ml-0 md:ml-16 transition-all duration-300">
+            <div class="p-4 md:p-8">
+            <div class="mx-auto max-w-7xl">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                    <h2 class="text-xl md:text-2xl font-bold text-white">Produtos</h2>
+                    <button onclick="openModal('addKeyModal')" class="inline-flex items-center px-3 py-2 md:px-4 md:py-2 border border-emerald-500 text-emerald-500 text-xs md:text-sm font-medium rounded-md hover:bg-emerald-500 hover:text-white transition-all duration-300">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 md:h-5 md:w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+                        </svg>
+                        <span class="hidden sm:inline">Adicionar Key</span>
+                        <span class="sm:hidden">Add Key</span>
+                    </button>
+                </div>
+
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-8">
+                                                <div class="relative bg-[#0a0a0a] p-4 rounded-lg shadow-lg border border-emerald-500/50 backdrop-blur-md group hover:border-emerald-500 transition-all duration-300">
+                            <div class="absolute inset-0 bg-[radial-gradient(#1a1a1a_1px,transparent_1px)] [background-size:16px_16px] [mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,black,transparent)] pointer-events-none rounded-lg"></div>
+                                                        <div class="relative w-full h-24 md:h-32 mb-3">
+                                <div class="image-loading absolute inset-0 bg-gradient-to-r from-gray-800 via-gray-700 to-gray-800 rounded-md animate-pulse flex items-center justify-center">
+                                    <svg class="w-8 h-8 text-gray-600 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                    </svg>
+                                </div>
+                                <img src="https://cdn.ereemby.com/attachments/17532420044784627imagem.png" alt="💚 Premiere" class="w-full h-full object-cover rounded-md relative opacity-0 transition-opacity duration-300" onload="this.style.opacity='1'; this.parentElement.querySelector('.image-loading').style.display='none';" onerror="this.parentElement.querySelector('.image-loading').innerHTML='<svg class=\'w-8 h-8 text-gray-600\' fill=\'none\' stroke=\'currentColor\' viewBox=\'0 0 24 24\'><path stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z\'></path></svg>';">
+                            </div>
+                                                        <h3 class="text-sm md:text-base font-semibold text-white relative mb-3 truncate">💚 Premiere</h3>
+                            
+                            <div class="space-y-2 mb-3">
+                                                                    <div class="inline-flex items-center px-2 py-1 bg-emerald-500/20 border border-emerald-500/50 rounded-full text-xs text-emerald-400" data-expires="2025-11-03 12:18:41">
+                                        <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                        </svg>
+                                        30d 16:38:32                                    </div>
+                                    <div class="inline-flex items-center px-2 py-1 bg-red-500/20 border border-red-500/50 rounded-full text-xs text-red-400">
+                                        <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                        </svg>
+                                        Expira 03/11/2025                                    </div>
+                                                </div>
+
+                            <button onclick="window.location.href='/dashboard/produto.php?id=2'" class="inline-flex items-center justify-center w-full px-3 py-1.5 border border-emerald-500 text-emerald-500 text-xs font-medium rounded-md hover:bg-emerald-500 hover:text-white transition-all duration-300 relative">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+                                </svg>
+                                Ver Acesso
+                            </button>
+                        </div>
+                                            </div>
+                
+                <h3 class="text-lg md:text-xl font-semibold text-white mb-6">Adquira Agora</h3>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                                        <div class="relative bg-[#0a0a0a] p-4 rounded-lg shadow-lg border border-[#333] backdrop-blur-md group hover:border-emerald-500/50 transition-all duration-300">
+                        <div class="absolute inset-0 bg-[radial-gradient(#1a1a1a_1px,transparent_1px)] [background-size:16px_16px] [mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,black,transparent)] pointer-events-none rounded-lg"></div>
+                                                <div class="relative w-full h-24 md:h-32 mb-3">
+                            <div class="image-loading absolute inset-0 bg-gradient-to-r from-gray-800 via-gray-700 to-gray-800 rounded-md animate-pulse flex items-center justify-center">
+                                <svg class="w-8 h-8 text-gray-600 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                </svg>
+                            </div>
+                            <img src="https://cdn.ereemby.com/attachments/17532420136659468imagem.png" alt="❤ClaroTv" class="w-full h-full object-cover rounded-md relative opacity-0 transition-opacity duration-300" onload="this.style.opacity='1'; this.parentElement.querySelector('.image-loading').style.display='none';" onerror="this.parentElement.querySelector('.image-loading').innerHTML='<svg class=\'w-8 h-8 text-gray-600\' fill=\'none\' stroke=\'currentColor\' viewBox=\'0 0 24 24\'><path stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z\'></path></svg>';">
+                        </div>
+                                                <h3 class="text-sm md:text-base font-semibold text-white relative mb-2 truncate">❤ClaroTv</h3>
+                        <p class="text-gray-400 relative text-xs md:text-sm mb-3 line-clamp-2">Detalhes da Conta:
+
+• Assinatura Ativa: Você recebe uma conta com o plano premium já ativado e pronto para usar.
+
+• Plano Mais Completo: Acesso ao melhor plano disponível no serviço de streaming, com todos os recursos liberados.</p>
+                        
+                                                
+                                                <a href="https://nextsystem.site/product/claro-tv" target="_blank" class="inline-flex items-center justify-center w-full px-3 py-1.5 border border-emerald-500 text-emerald-500 text-xs font-medium rounded-md hover:bg-emerald-500 hover:text-white transition-all duration-300 relative">
+                            Detalhes
+                        </a>
+                                            </div>
+                                        <div class="relative bg-[#0a0a0a] p-4 rounded-lg shadow-lg border border-[#333] backdrop-blur-md group hover:border-emerald-500/50 transition-all duration-300">
+                        <div class="absolute inset-0 bg-[radial-gradient(#1a1a1a_1px,transparent_1px)] [background-size:16px_16px] [mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,black,transparent)] pointer-events-none rounded-lg"></div>
+                                                <div class="relative w-full h-24 md:h-32 mb-3">
+                            <div class="image-loading absolute inset-0 bg-gradient-to-r from-gray-800 via-gray-700 to-gray-800 rounded-md animate-pulse flex items-center justify-center">
+                                <svg class="w-8 h-8 text-gray-600 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                </svg>
+                            </div>
+                            <img src="https://cdn.ereemby.com/attachments/17461246162394364imagem.png" alt="💙 Paramount" class="w-full h-full object-cover rounded-md relative opacity-0 transition-opacity duration-300" onload="this.style.opacity='1'; this.parentElement.querySelector('.image-loading').style.display='none';" onerror="this.parentElement.querySelector('.image-loading').innerHTML='<svg class=\'w-8 h-8 text-gray-600\' fill=\'none\' stroke=\'currentColor\' viewBox=\'0 0 24 24\'><path stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z\'></path></svg>';">
+                        </div>
+                                                <h3 class="text-sm md:text-base font-semibold text-white relative mb-2 truncate">💙 Paramount</h3>
+                        <p class="text-gray-400 relative text-xs md:text-sm mb-3 line-clamp-2">Detalhes da Conta:
+
+• Assinatura Ativa: Você recebe uma conta com o plano premium já ativado e pronto para usar.
+
+• Plano Mais Completo: Acesso ao melhor plano disponível no serviço de streaming, com todos os recursos liberados.</p>
+                        
+                                                
+                                                <a href="https://nextsystem.site/product/paramount" target="_blank" class="inline-flex items-center justify-center w-full px-3 py-1.5 border border-emerald-500 text-emerald-500 text-xs font-medium rounded-md hover:bg-emerald-500 hover:text-white transition-all duration-300 relative">
+                            Detalhes
+                        </a>
+                                            </div>
+                                        <div class="relative bg-[#0a0a0a] p-4 rounded-lg shadow-lg border border-[#333] backdrop-blur-md group hover:border-emerald-500/50 transition-all duration-300">
+                        <div class="absolute inset-0 bg-[radial-gradient(#1a1a1a_1px,transparent_1px)] [background-size:16px_16px] [mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,black,transparent)] pointer-events-none rounded-lg"></div>
+                                                <div class="relative w-full h-24 md:h-32 mb-3">
+                            <div class="image-loading absolute inset-0 bg-gradient-to-r from-gray-800 via-gray-700 to-gray-800 rounded-md animate-pulse flex items-center justify-center">
+                                <svg class="w-8 h-8 text-gray-600 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                </svg>
+                            </div>
+                            <img src="https://cdn.ereemby.com/attachments/17532420223257847imagem.png" alt="🤍 ESPN" class="w-full h-full object-cover rounded-md relative opacity-0 transition-opacity duration-300" onload="this.style.opacity='1'; this.parentElement.querySelector('.image-loading').style.display='none';" onerror="this.parentElement.querySelector('.image-loading').innerHTML='<svg class=\'w-8 h-8 text-gray-600\' fill=\'none\' stroke=\'currentColor\' viewBox=\'0 0 24 24\'><path stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z\'></path></svg>';">
+                        </div>
+                                                <h3 class="text-sm md:text-base font-semibold text-white relative mb-2 truncate">🤍 ESPN</h3>
+                        <p class="text-gray-400 relative text-xs md:text-sm mb-3 line-clamp-2">Detalhes da Conta:
+• Assinatura Ativa: Você recebe uma conta com o plano premium já ativado e pronto para usar.
+
+• Plano Mais Completo: Acesso ao melhor plano disponível no serviço de streaming, com todos os recursos liberados.</p>
+                        
+                                                
+                                                <a href="https://nextsystem.site/product/espn" target="_blank" class="inline-flex items-center justify-center w-full px-3 py-1.5 border border-emerald-500 text-emerald-500 text-xs font-medium rounded-md hover:bg-emerald-500 hover:text-white transition-all duration-300 relative">
+                            Detalhes
+                        </a>
+                                            </div>
+                                        <div class="relative bg-[#0a0a0a] p-4 rounded-lg shadow-lg border border-[#333] backdrop-blur-md group hover:border-emerald-500/50 transition-all duration-300">
+                        <div class="absolute inset-0 bg-[radial-gradient(#1a1a1a_1px,transparent_1px)] [background-size:16px_16px] [mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,black,transparent)] pointer-events-none rounded-lg"></div>
+                                                <div class="relative w-full h-24 md:h-32 mb-3">
+                            <div class="image-loading absolute inset-0 bg-gradient-to-r from-gray-800 via-gray-700 to-gray-800 rounded-md animate-pulse flex items-center justify-center">
+                                <svg class="w-8 h-8 text-gray-600 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                </svg>
+                            </div>
+                            <img src="https://cdn.ereemby.com/attachments/17405665422498658imagem.jpeg" alt="🧡 Crunchyroll" class="w-full h-full object-cover rounded-md relative opacity-0 transition-opacity duration-300" onload="this.style.opacity='1'; this.parentElement.querySelector('.image-loading').style.display='none';" onerror="this.parentElement.querySelector('.image-loading').innerHTML='<svg class=\'w-8 h-8 text-gray-600\' fill=\'none\' stroke=\'currentColor\' viewBox=\'0 0 24 24\'><path stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z\'></path></svg>';">
+                        </div>
+                                                <h3 class="text-sm md:text-base font-semibold text-white relative mb-2 truncate">🧡 Crunchyroll</h3>
+                        <p class="text-gray-400 relative text-xs md:text-sm mb-3 line-clamp-2">Detalhes da Conta:
+
+• Assinatura Ativa: Você recebe uma conta com o plano premium já ativado e pronto para usar.
+
+• Plano Mais Completo: Acesso ao melhor plano disponível no serviço de streaming, com todos os recursos liberados.</p>
+                        
+                                                
+                                                <a href="https://nextsystem.site/product/crunchyroll" target="_blank" class="inline-flex items-center justify-center w-full px-3 py-1.5 border border-emerald-500 text-emerald-500 text-xs font-medium rounded-md hover:bg-emerald-500 hover:text-white transition-all duration-300 relative">
+                            Detalhes
+                        </a>
+                                            </div>
+                                        <div class="relative bg-[#0a0a0a] p-4 rounded-lg shadow-lg border border-[#333] backdrop-blur-md group hover:border-emerald-500/50 transition-all duration-300">
+                        <div class="absolute inset-0 bg-[radial-gradient(#1a1a1a_1px,transparent_1px)] [background-size:16px_16px] [mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,black,transparent)] pointer-events-none rounded-lg"></div>
+                                                <div class="relative w-full h-24 md:h-32 mb-3">
+                            <div class="image-loading absolute inset-0 bg-gradient-to-r from-gray-800 via-gray-700 to-gray-800 rounded-md animate-pulse flex items-center justify-center">
+                                <svg class="w-8 h-8 text-gray-600 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                </svg>
+                            </div>
+                            <img src="https://cdn.ereemby.com/attachments/1740566557327363imagem.jpeg" alt="💙 Prime Video" class="w-full h-full object-cover rounded-md relative opacity-0 transition-opacity duration-300" onload="this.style.opacity='1'; this.parentElement.querySelector('.image-loading').style.display='none';" onerror="this.parentElement.querySelector('.image-loading').innerHTML='<svg class=\'w-8 h-8 text-gray-600\' fill=\'none\' stroke=\'currentColor\' viewBox=\'0 0 24 24\'><path stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z\'></path></svg>';">
+                        </div>
+                                                <h3 class="text-sm md:text-base font-semibold text-white relative mb-2 truncate">💙 Prime Video</h3>
+                        <p class="text-gray-400 relative text-xs md:text-sm mb-3 line-clamp-2">Detalhes da Conta:
+• Assinatura Ativa: Você recebe uma conta com o plano premium já ativado e pronto para usar.
+
+• Plano Mais Completo: Acesso ao melhor plano disponível no serviço de streaming, com todos os recursos liberados.</p>
+                        
+                                                
+                                                <a href="https://nextsystem.site/product/amazon-prime" target="_blank" class="inline-flex items-center justify-center w-full px-3 py-1.5 border border-emerald-500 text-emerald-500 text-xs font-medium rounded-md hover:bg-emerald-500 hover:text-white transition-all duration-300 relative">
+                            Detalhes
+                        </a>
+                                            </div>
+                                        <div class="relative bg-[#0a0a0a] p-4 rounded-lg shadow-lg border border-[#333] backdrop-blur-md group hover:border-emerald-500/50 transition-all duration-300">
+                        <div class="absolute inset-0 bg-[radial-gradient(#1a1a1a_1px,transparent_1px)] [background-size:16px_16px] [mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,black,transparent)] pointer-events-none rounded-lg"></div>
+                                                <div class="relative w-full h-24 md:h-32 mb-3">
+                            <div class="image-loading absolute inset-0 bg-gradient-to-r from-gray-800 via-gray-700 to-gray-800 rounded-md animate-pulse flex items-center justify-center">
+                                <svg class="w-8 h-8 text-gray-600 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                </svg>
+                            </div>
+                            <img src="https://cdn.ereemby.com/attachments/17415781670353140imagem.jpeg" alt="💙 Disney Plus" class="w-full h-full object-cover rounded-md relative opacity-0 transition-opacity duration-300" onload="this.style.opacity='1'; this.parentElement.querySelector('.image-loading').style.display='none';" onerror="this.parentElement.querySelector('.image-loading').innerHTML='<svg class=\'w-8 h-8 text-gray-600\' fill=\'none\' stroke=\'currentColor\' viewBox=\'0 0 24 24\'><path stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z\'></path></svg>';">
+                        </div>
+                                                <h3 class="text-sm md:text-base font-semibold text-white relative mb-2 truncate">💙 Disney Plus</h3>
+                        <p class="text-gray-400 relative text-xs md:text-sm mb-3 line-clamp-2">Detalhes da Conta:
+• Assinatura Ativa: Você recebe uma conta com o plano premium já ativado e pronto para usar.
+
+• Plano Mais Completo: Acesso ao melhor plano disponível no serviço de streaming, com todos os recursos liberados.</p>
+                        
+                                                
+                                                <a href="https://nextsystem.site/product/disneyplus" target="_blank" class="inline-flex items-center justify-center w-full px-3 py-1.5 border border-emerald-500 text-emerald-500 text-xs font-medium rounded-md hover:bg-emerald-500 hover:text-white transition-all duration-300 relative">
+                            Detalhes
+                        </a>
+                                            </div>
+                                        <div class="relative bg-[#0a0a0a] p-4 rounded-lg shadow-lg border border-[#333] backdrop-blur-md group hover:border-emerald-500/50 transition-all duration-300">
+                        <div class="absolute inset-0 bg-[radial-gradient(#1a1a1a_1px,transparent_1px)] [background-size:16px_16px] [mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,black,transparent)] pointer-events-none rounded-lg"></div>
+                                                <div class="relative w-full h-24 md:h-32 mb-3">
+                            <div class="image-loading absolute inset-0 bg-gradient-to-r from-gray-800 via-gray-700 to-gray-800 rounded-md animate-pulse flex items-center justify-center">
+                                <svg class="w-8 h-8 text-gray-600 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                </svg>
+                            </div>
+                            <img src="https://cdn.ereemby.com/attachments/17405665474705117imagem.jpeg" alt="💜 Hbo Max" class="w-full h-full object-cover rounded-md relative opacity-0 transition-opacity duration-300" onload="this.style.opacity='1'; this.parentElement.querySelector('.image-loading').style.display='none';" onerror="this.parentElement.querySelector('.image-loading').innerHTML='<svg class=\'w-8 h-8 text-gray-600\' fill=\'none\' stroke=\'currentColor\' viewBox=\'0 0 24 24\'><path stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z\'></path></svg>';">
+                        </div>
+                                                <h3 class="text-sm md:text-base font-semibold text-white relative mb-2 truncate">💜 Hbo Max</h3>
+                        <p class="text-gray-400 relative text-xs md:text-sm mb-3 line-clamp-2">Detalhes da Conta:
+
+• Assinatura Ativa: Você recebe uma conta com o plano premium já ativado e pronto para usar.
+
+• Plano Mais Completo: Acesso ao melhor plano disponível no serviço de streaming, com todos os recursos liberados.</p>
+                        
+                                                
+                                                <a href="https://nextsystem.site/product/hbomax" target="_blank" class="inline-flex items-center justify-center w-full px-3 py-1.5 border border-emerald-500 text-emerald-500 text-xs font-medium rounded-md hover:bg-emerald-500 hover:text-white transition-all duration-300 relative">
+                            Detalhes
+                        </a>
+                                            </div>
+                                        <div class="relative bg-[#0a0a0a] p-4 rounded-lg shadow-lg border border-[#333] backdrop-blur-md group hover:border-emerald-500/50 transition-all duration-300">
+                        <div class="absolute inset-0 bg-[radial-gradient(#1a1a1a_1px,transparent_1px)] [background-size:16px_16px] [mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,black,transparent)] pointer-events-none rounded-lg"></div>
+                                                <div class="relative w-full h-24 md:h-32 mb-3">
+                            <div class="image-loading absolute inset-0 bg-gradient-to-r from-gray-800 via-gray-700 to-gray-800 rounded-md animate-pulse flex items-center justify-center">
+                                <svg class="w-8 h-8 text-gray-600 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                </svg>
+                            </div>
+                            <img src="https://cdn.ereemby.com/attachments/17461246196859897imagem.png" alt="💙 Chat GPT" class="w-full h-full object-cover rounded-md relative opacity-0 transition-opacity duration-300" onload="this.style.opacity='1'; this.parentElement.querySelector('.image-loading').style.display='none';" onerror="this.parentElement.querySelector('.image-loading').innerHTML='<svg class=\'w-8 h-8 text-gray-600\' fill=\'none\' stroke=\'currentColor\' viewBox=\'0 0 24 24\'><path stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z\'></path></svg>';">
+                        </div>
+                                                <h3 class="text-sm md:text-base font-semibold text-white relative mb-2 truncate">💙 Chat GPT</h3>
+                        <p class="text-gray-400 relative text-xs md:text-sm mb-3 line-clamp-2">Detalhes da Conta:
+
+• Assinatura Ativa: Você recebe uma conta com o plano premium já ativado e pronto para usar.
+
+• Plano Mais Completo: Acesso ao melhor plano disponível no serviço de streaming, com todos os recursos liberados.</p>
+                        
+                                                
+                                                <a href="https://nextsystem.site/product/chatgpt" target="_blank" class="inline-flex items-center justify-center w-full px-3 py-1.5 border border-emerald-500 text-emerald-500 text-xs font-medium rounded-md hover:bg-emerald-500 hover:text-white transition-all duration-300 relative">
+                            Detalhes
+                        </a>
+                                            </div>
+                                        <div class="relative bg-[#0a0a0a] p-4 rounded-lg shadow-lg border border-[#333] backdrop-blur-md group hover:border-emerald-500/50 transition-all duration-300">
+                        <div class="absolute inset-0 bg-[radial-gradient(#1a1a1a_1px,transparent_1px)] [background-size:16px_16px] [mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,black,transparent)] pointer-events-none rounded-lg"></div>
+                                                <div class="relative w-full h-24 md:h-32 mb-3">
+                            <div class="image-loading absolute inset-0 bg-gradient-to-r from-gray-800 via-gray-700 to-gray-800 rounded-md animate-pulse flex items-center justify-center">
+                                <svg class="w-8 h-8 text-gray-600 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                </svg>
+                            </div>
+                            <img src="https://cdn.ereemby.com/attachments/17532420154262876imagem.png" alt="❤ COMBATE" class="w-full h-full object-cover rounded-md relative opacity-0 transition-opacity duration-300" onload="this.style.opacity='1'; this.parentElement.querySelector('.image-loading').style.display='none';" onerror="this.parentElement.querySelector('.image-loading').innerHTML='<svg class=\'w-8 h-8 text-gray-600\' fill=\'none\' stroke=\'currentColor\' viewBox=\'0 0 24 24\'><path stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z\'></path></svg>';">
+                        </div>
+                                                <h3 class="text-sm md:text-base font-semibold text-white relative mb-2 truncate">❤ COMBATE</h3>
+                        <p class="text-gray-400 relative text-xs md:text-sm mb-3 line-clamp-2">Detalhes da Conta:
+
+• Assinatura Ativa: Você recebe uma conta com o plano premium já ativado e pronto para usar.
+
+• Plano Mais Completo: Acesso ao melhor plano disponível no serviço de streaming, com todos os recursos liberados.</p>
+                        
+                                                
+                                                <a href="https://nextsystem.site/product/combate" target="_blank" class="inline-flex items-center justify-center w-full px-3 py-1.5 border border-emerald-500 text-emerald-500 text-xs font-medium rounded-md hover:bg-emerald-500 hover:text-white transition-all duration-300 relative">
+                            Detalhes
+                        </a>
+                                            </div>
+                                        <div class="relative bg-[#0a0a0a] p-4 rounded-lg shadow-lg border border-[#333] backdrop-blur-md group hover:border-emerald-500/50 transition-all duration-300">
+                        <div class="absolute inset-0 bg-[radial-gradient(#1a1a1a_1px,transparent_1px)] [background-size:16px_16px] [mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,black,transparent)] pointer-events-none rounded-lg"></div>
+                                                <div class="relative w-full h-24 md:h-32 mb-3">
+                            <div class="image-loading absolute inset-0 bg-gradient-to-r from-gray-800 via-gray-700 to-gray-800 rounded-md animate-pulse flex items-center justify-center">
+                                <svg class="w-8 h-8 text-gray-600 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                </svg>
+                            </div>
+                            <img src="https://cdn.ereemby.com/attachments/17405665524735306imagem.jpeg" alt="❤ Netflix" class="w-full h-full object-cover rounded-md relative opacity-0 transition-opacity duration-300" onload="this.style.opacity='1'; this.parentElement.querySelector('.image-loading').style.display='none';" onerror="this.parentElement.querySelector('.image-loading').innerHTML='<svg class=\'w-8 h-8 text-gray-600\' fill=\'none\' stroke=\'currentColor\' viewBox=\'0 0 24 24\'><path stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z\'></path></svg>';">
+                        </div>
+                                                <h3 class="text-sm md:text-base font-semibold text-white relative mb-2 truncate">❤ Netflix</h3>
+                        <p class="text-gray-400 relative text-xs md:text-sm mb-3 line-clamp-2">Detalhes da Conta:
+
+• Assinatura Ativa: Você recebe uma conta com o plano premium já ativado e pronto para usar.
+
+• Plano Mais Completo: Acesso ao melhor plano disponível no serviço de streaming, com todos os recursos liberados.</p>
+                        
+                                                
+                                                <a href="https://nextsystem.site/product/netflix" target="_blank" class="inline-flex items-center justify-center w-full px-3 py-1.5 border border-emerald-500 text-emerald-500 text-xs font-medium rounded-md hover:bg-emerald-500 hover:text-white transition-all duration-300 relative">
+                            Detalhes
+                        </a>
+                                            </div>
+                                    </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="addKeyModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="relative bg-[#0a0a0a] p-6 rounded-lg w-[500px] border border-[#333] backdrop-blur-md shadow-lg">
+            <div class="absolute inset-0 bg-[radial-gradient(#1a1a1a_1px,transparent_1px)] [background-size:16px_16px] [mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,black,transparent)] pointer-events-none rounded-lg"></div>
+            <div class="relative">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-xl font-bold text-white flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+                        </svg>
+                        Ativar Produto
+                    </h2>
+                    <button onclick="closeModal('addKeyModal')" class="text-gray-400 hover:text-white">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+                <form id="addKeyForm" class="space-y-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-2">Key</label>
+                        <input type="text" id="addKeyValue" class="w-full px-3 py-2 bg-[#1a1a1a] border border-[#333] rounded-lg text-white focus:outline-none focus:border-emerald-500 font-mono" placeholder="Insira sua key aqui" required>
+                    </div>
+                    <div class="flex justify-end gap-3 pt-4">
+                        <button type="button" onclick="closeModal('addKeyModal')" class="px-4 py-2 border border-[#333] text-gray-400 text-sm font-medium rounded-md hover:bg-[#1a1a1a] transition-all duration-300">Cancelar</button>
+                        <button type="button" onclick="activateKey()" class="px-4 py-2 bg-emerald-500 text-white text-sm font-medium rounded-md hover:bg-emerald-600 transition-all duration-300">Ativar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="hidden fixed bottom-4 right-4 z-50 min-w-[300px] bg-[linear-gradient(135deg,rgba(0,0,0,0.8),rgba(0,0,0,0.6))] rounded-lg shadow-lg border border-[#333] p-4 backdrop-blur-md">
+        <div class="flex items-start gap-4">
+            <svg class="size-6 text-emerald-500 hidden success-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M9 12l2 2 4-4"/>
+                <circle cx="12" cy="12" r="10"/>
+            </svg>
+            <svg class="size-6 text-red-500 hidden error-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M15 9l-6 6"/>
+                <path d="M9 9l6 6"/>
+            </svg>
+            <div class="flex-1">
+                <div class="text-white font-semibold mb-1 toast-title"></div>
+                <div class="text-gray-300 text-sm toast-message"></div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @keyframes slideOut {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100%); opacity: 0; }
+        }
+
+        #toast {
+            animation: slideIn 0.3s ease-out forwards;
+        }
+
+        #toast.hide {
+            animation: slideOut 0.3s ease-in forwards;
+        }
+
+        /* Sidebar Retrátil Mobile */
+        @media (max-width: 768px) {
+            #sidebar {
+                transform: translateX(-100%);
+            }
+            
+            #sidebar.open {
+                transform: translateX(0);
+            }
+            
+            #sidebar.open #toggleIcon {
+                transform: rotate(180deg);
+            }
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #10b981, #059669);
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, #059669, #047857);
+        }
+
+        ::-webkit-scrollbar-corner {
+            background: transparent;
+        }
+
+        /* Firefox Scrollbar */
+        * {
+            scrollbar-width: thin;
+            scrollbar-color: #10b981 rgba(0, 0, 0, 0.1);
+        }
+
+        /* Loading Animation */
+        @keyframes shimmer {
+            0% {
+                background-position: -200px 0;
+            }
+            100% {
+                background-position: calc(200px + 100%) 0;
+            }
+        }
+
+        .image-loading {
+            background: linear-gradient(90deg, #1f2937 25%, #374151 50%, #1f2937 75%);
+            background-size: 200px 100%;
+            animation: shimmer 1.5s infinite;
+        }
+
+        /* Smooth image transition */
+        img {
+            transition: opacity 0.3s ease-in-out;
+        }
+    </style>
+
+<script>
+        let addSelectedProducts = [];
+
+        function openModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.remove('hidden');
+            }
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.add('hidden');
+            if (modalId === 'addKeyModal') {
+                document.getElementById('addKeyForm').reset();
+            }
+        }
+
+        function activateKey() {
+            const key = document.getElementById('addKeyValue').value;
+            if (!key.trim()) {
+                showToast('Erro', 'Digite a key para ativar', 'error');
+                return;
+            }
+
+            const data = {
+                key: key.trim()
+            };
+
+            fetch('/api/admin/keys/activate.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'include',
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    showToast('Sucesso', data.message, 'success');
+                    closeModal('addKeyModal');
+                    setTimeout(() => window.location.reload(), 1500);
+                } else {
+                    showToast('Erro', data.message, 'error');
+                }
+            })
+            .catch(() => showToast('Erro', 'Erro ao ativar key', 'error'));
+        }
+
+        function showToast(title, message, type = 'success') {
+            const toast = document.getElementById('toast');
+            const titleEl = toast.querySelector('.toast-title');
+            const messageEl = toast.querySelector('.toast-message');
+            const successIcon = toast.querySelector('.success-icon');
+            const errorIcon = toast.querySelector('.error-icon');
+            
+            titleEl.textContent = title;
+            messageEl.textContent = message;
+            
+            if (type === 'success') {
+                successIcon.classList.remove('hidden');
+                errorIcon.classList.add('hidden');
+            } else {
+                successIcon.classList.add('hidden');
+                errorIcon.classList.remove('hidden');
+            }
+            
+            toast.classList.remove('hidden');
+            setTimeout(() => {
+                toast.classList.add('hide');
+                setTimeout(() => {
+                    toast.classList.add('hidden');
+                    toast.classList.remove('hide');
+                }, 300);
+            }, 3000);
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.modal').forEach(modal => {
+                modal.addEventListener('click', function(e) {
+                    if (e.target === this) {
+                        closeModal(this.id);
+                    }
+                });
+            });
+
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    document.querySelectorAll('.modal').forEach(modal => {
+                        closeModal(modal.id);
+                    });
+                }
+            });
+        });
+
+async function logout() {
+    try {
+        const response = await fetch('/api/auth/logout.php', {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        const data = await response.json();
+        if (data.status === 'success') {
+            document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+            window.location.href = '/';
+        } else {
+            console.error('Erro no logout:', data.message);
+            document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+            window.location.href = '/';
+        }
+    } catch (error) {
+        console.error('Erro ao fazer logout:', error);
+        document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+        window.location.href = '/';
+    }
+}
+
+        function comprarNovamente(nomeProduto) {
+            const produtos = [{"id":"11","name":"\u2764ClaroTv","description":"Detalhes da Conta:\n\n\u2022 Assinatura Ativa: Voc\u00ea recebe uma conta com o plano premium j\u00e1 ativado e pronto para usar.\n\n\u2022 Plano Mais Completo: Acesso ao melhor plano dispon\u00edvel no servi\u00e7o de streaming, com todos os recursos liberados.","image":"https:\/\/cdn.ereemby.com\/attachments\/17532420136659468imagem.png","link":"https:\/\/nextsystem.site\/product\/claro-tv","created_id":"1","created_at":"2025-08-14 20:01:51","edited_at":"2025-08-14 20:02:10","stock":"alecrib:#Sandro2017*\njoaojfioretti:Joao1960","requires_code":"0"},{"id":"10","name":"\ud83d\udc99 Paramount","description":"Detalhes da Conta:\n\n\u2022 Assinatura Ativa: Voc\u00ea recebe uma conta com o plano premium j\u00e1 ativado e pronto para usar.\n\n\u2022 Plano Mais Completo: Acesso ao melhor plano dispon\u00edvel no servi\u00e7o de streaming, com todos os recursos liberados.","image":"https:\/\/cdn.ereemby.com\/attachments\/17461246162394364imagem.png","link":"https:\/\/nextsystem.site\/product\/paramount","created_id":"1","created_at":"2025-08-14 19:55:16","edited_at":"2025-09-09 14:48:58","stock":"nextsystemcom5249@powerscrews.com:cliente123","requires_code":"0"},{"id":"9","name":"\ud83e\udd0d ESPN","description":"Detalhes da Conta:\n\u2022 Assinatura Ativa: Voc\u00ea recebe uma conta com o plano premium j\u00e1 ativado e pronto para usar.\n\n\u2022 Plano Mais Completo: Acesso ao melhor plano dispon\u00edvel no servi\u00e7o de streaming, com todos os recursos liberados.","image":"https:\/\/cdn.ereemby.com\/attachments\/17532420223257847imagem.png","link":"https:\/\/nextsystem.site\/product\/espn","created_id":"1","created_at":"2025-08-14 19:14:28","edited_at":"2025-08-14 19:59:36","stock":"kleberrezendemacedo@gmail.com:flamengo123@","requires_code":"1"},{"id":"8","name":"\ud83e\udde1 Crunchyroll","description":"Detalhes da Conta:\n\n\u2022 Assinatura Ativa: Voc\u00ea recebe uma conta com o plano premium j\u00e1 ativado e pronto para usar.\n\n\u2022 Plano Mais Completo: Acesso ao melhor plano dispon\u00edvel no servi\u00e7o de streaming, com todos os recursos liberados.","image":"https:\/\/cdn.ereemby.com\/attachments\/17405665422498658imagem.jpeg","link":"https:\/\/nextsystem.site\/product\/crunchyroll","created_id":"1","created_at":"2025-08-14 19:13:05","edited_at":"2025-08-14 19:13:05","stock":"haimeklepikdhn@hotmail.com:andre1215","requires_code":"0"},{"id":"7","name":"\ud83d\udc99 Prime Video","description":"Detalhes da Conta:\n\u2022 Assinatura Ativa: Voc\u00ea recebe uma conta com o plano premium j\u00e1 ativado e pronto para usar.\n\n\u2022 Plano Mais Completo: Acesso ao melhor plano dispon\u00edvel no servi\u00e7o de streaming, com todos os recursos liberados.","image":"https:\/\/cdn.ereemby.com\/attachments\/1740566557327363imagem.jpeg","link":"https:\/\/nextsystem.site\/product\/amazon-prime","created_id":"1","created_at":"2025-08-14 19:11:28","edited_at":"2025-10-02 12:32:24","stock":"primevideomail23@mailpro.live:ddd123456789","requires_code":"0"},{"id":"6","name":"\ud83d\udc99 Disney Plus","description":"Detalhes da Conta:\n\u2022 Assinatura Ativa: Voc\u00ea recebe uma conta com o plano premium j\u00e1 ativado e pronto para usar.\n\n\u2022 Plano Mais Completo: Acesso ao melhor plano dispon\u00edvel no servi\u00e7o de streaming, com todos os recursos liberados.","image":"https:\/\/cdn.ereemby.com\/attachments\/17415781670353140imagem.jpeg","link":"https:\/\/nextsystem.site\/product\/disneyplus","created_id":"1","created_at":"2025-08-14 19:10:50","edited_at":"2025-09-26 12:38:13","stock":"nextsystem002@gmail.com:@Nextsystem111222","requires_code":"1"},{"id":"5","name":"\ud83d\udc9c Hbo Max","description":"Detalhes da Conta:\n\n\u2022 Assinatura Ativa: Voc\u00ea recebe uma conta com o plano premium j\u00e1 ativado e pronto para usar.\n\n\u2022 Plano Mais Completo: Acesso ao melhor plano dispon\u00edvel no servi\u00e7o de streaming, com todos os recursos liberados.","image":"https:\/\/cdn.ereemby.com\/attachments\/17405665474705117imagem.jpeg","link":"https:\/\/nextsystem.site\/product\/hbomax","created_id":"1","created_at":"2025-08-14 19:08:59","edited_at":"2025-10-02 11:01:13","stock":"lexmaldrog+2022@gmail.com:lajumato22","requires_code":"0"},{"id":"4","name":"\ud83d\udc99 Chat GPT","description":"Detalhes da Conta:\n\n\u2022 Assinatura Ativa: Voc\u00ea recebe uma conta com o plano premium j\u00e1 ativado e pronto para usar.\n\n\u2022 Plano Mais Completo: Acesso ao melhor plano dispon\u00edvel no servi\u00e7o de streaming, com todos os recursos liberados.","image":"https:\/\/cdn.ereemby.com\/attachments\/17461246196859897imagem.png","link":"https:\/\/nextsystem.site\/product\/chatgpt","created_id":"1","created_at":"2025-08-14 19:07:49","edited_at":"2025-09-11 12:22:29","stock":"bisharau90414@hotmail.com:If35jK3006R8QtxwB9","requires_code":"1"},{"id":"3","name":"\u2764 COMBATE","description":"Detalhes da Conta:\n\n\u2022 Assinatura Ativa: Voc\u00ea recebe uma conta com o plano premium j\u00e1 ativado e pronto para usar.\n\n\u2022 Plano Mais Completo: Acesso ao melhor plano dispon\u00edvel no servi\u00e7o de streaming, com todos os recursos liberados.","image":"https:\/\/cdn.ereemby.com\/attachments\/17532420154262876imagem.png","link":"https:\/\/nextsystem.site\/product\/combate","created_id":"1","created_at":"2025-08-14 19:05:58","edited_at":"2025-08-14 19:05:58","stock":"xxxxxx:xxxx","requires_code":"0"},{"id":"1","name":"\u2764 Netflix","description":"Detalhes da Conta:\n\n\u2022 Assinatura Ativa: Voc\u00ea recebe uma conta com o plano premium j\u00e1 ativado e pronto para usar.\n\n\u2022 Plano Mais Completo: Acesso ao melhor plano dispon\u00edvel no servi\u00e7o de streaming, com todos os recursos liberados.","image":"https:\/\/cdn.ereemby.com\/attachments\/17405665524735306imagem.jpeg","link":"https:\/\/nextsystem.site\/product\/netflix","created_id":"1","created_at":"2025-08-14 17:44:50","edited_at":"2025-09-24 13:05:16","stock":"mercadosilva1966+ruel@gmail.com:18092025","requires_code":"0"}];
+            const produto = produtos.find(p => p.name === nomeProduto);
+            
+            if (produto && produto.link) {
+                window.open(produto.link, '_blank');
+            } else {
+                openModal('addKeyModal');
+                showToast('Info', `Digite uma nova key para ativar ${nomeProduto} novamente`, 'success');
+            }
+        }
+
+        function updateTempoRestante() {
+            const badges = document.querySelectorAll('[data-expires]');
+            
+            badges.forEach(badge => {
+                const expiresAt = new Date(badge.dataset.expires);
+                const now = new Date();
+                const diff = expiresAt - now;
+                
+                if (diff > 0) {
+                    const months = Math.floor(diff / (1000 * 60 * 60 * 24 * 30));
+                    const days = Math.floor((diff % (1000 * 60 * 60 * 24 * 30)) / (1000 * 60 * 60 * 24));
+                    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                    const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+                    
+                    let tempoRestante = '';
+                    if (months > 0) tempoRestante += months + 'm ';
+                    if (days > 0) tempoRestante += days + 'd ';
+                    tempoRestante += `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                    badge.textContent = tempoRestante;
+                    
+                    if (hours === 0 && minutes === 0 && seconds === 0) {
+                        badge.textContent = 'Expirado';
+                        badge.className = 'inline-flex items-center px-2 py-1 bg-red-500/20 border border-red-500/50 rounded-full text-xs text-red-400';
+                    }
+                } else {
+                    badge.textContent = 'Expirado';
+                    badge.className = 'inline-flex items-center px-2 py-1 bg-red-500/20 border border-red-500/50 rounded-full text-xs text-red-400';
+                }
+            });
+        }
+
+        setInterval(updateTempoRestante, 1000);
+        updateTempoRestante();
+
+        function comprarNovamente(nomeProduto) {
+            const produtos = [{"id":"11","name":"\u2764ClaroTv","description":"Detalhes da Conta:\n\n\u2022 Assinatura Ativa: Voc\u00ea recebe uma conta com o plano premium j\u00e1 ativado e pronto para usar.\n\n\u2022 Plano Mais Completo: Acesso ao melhor plano dispon\u00edvel no servi\u00e7o de streaming, com todos os recursos liberados.","image":"https:\/\/cdn.ereemby.com\/attachments\/17532420136659468imagem.png","link":"https:\/\/nextsystem.site\/product\/claro-tv","created_id":"1","created_at":"2025-08-14 20:01:51","edited_at":"2025-08-14 20:02:10","stock":"alecrib:#Sandro2017*\njoaojfioretti:Joao1960","requires_code":"0"},{"id":"10","name":"\ud83d\udc99 Paramount","description":"Detalhes da Conta:\n\n\u2022 Assinatura Ativa: Voc\u00ea recebe uma conta com o plano premium j\u00e1 ativado e pronto para usar.\n\n\u2022 Plano Mais Completo: Acesso ao melhor plano dispon\u00edvel no servi\u00e7o de streaming, com todos os recursos liberados.","image":"https:\/\/cdn.ereemby.com\/attachments\/17461246162394364imagem.png","link":"https:\/\/nextsystem.site\/product\/paramount","created_id":"1","created_at":"2025-08-14 19:55:16","edited_at":"2025-09-09 14:48:58","stock":"nextsystemcom5249@powerscrews.com:cliente123","requires_code":"0"},{"id":"9","name":"\ud83e\udd0d ESPN","description":"Detalhes da Conta:\n\u2022 Assinatura Ativa: Voc\u00ea recebe uma conta com o plano premium j\u00e1 ativado e pronto para usar.\n\n\u2022 Plano Mais Completo: Acesso ao melhor plano dispon\u00edvel no servi\u00e7o de streaming, com todos os recursos liberados.","image":"https:\/\/cdn.ereemby.com\/attachments\/17532420223257847imagem.png","link":"https:\/\/nextsystem.site\/product\/espn","created_id":"1","created_at":"2025-08-14 19:14:28","edited_at":"2025-08-14 19:59:36","stock":"kleberrezendemacedo@gmail.com:flamengo123@","requires_code":"1"},{"id":"8","name":"\ud83e\udde1 Crunchyroll","description":"Detalhes da Conta:\n\n\u2022 Assinatura Ativa: Voc\u00ea recebe uma conta com o plano premium j\u00e1 ativado e pronto para usar.\n\n\u2022 Plano Mais Completo: Acesso ao melhor plano dispon\u00edvel no servi\u00e7o de streaming, com todos os recursos liberados.","image":"https:\/\/cdn.ereemby.com\/attachments\/17405665422498658imagem.jpeg","link":"https:\/\/nextsystem.site\/product\/crunchyroll","created_id":"1","created_at":"2025-08-14 19:13:05","edited_at":"2025-08-14 19:13:05","stock":"haimeklepikdhn@hotmail.com:andre1215","requires_code":"0"},{"id":"7","name":"\ud83d\udc99 Prime Video","description":"Detalhes da Conta:\n\u2022 Assinatura Ativa: Voc\u00ea recebe uma conta com o plano premium j\u00e1 ativado e pronto para usar.\n\n\u2022 Plano Mais Completo: Acesso ao melhor plano dispon\u00edvel no servi\u00e7o de streaming, com todos os recursos liberados.","image":"https:\/\/cdn.ereemby.com\/attachments\/1740566557327363imagem.jpeg","link":"https:\/\/nextsystem.site\/product\/amazon-prime","created_id":"1","created_at":"2025-08-14 19:11:28","edited_at":"2025-10-02 12:32:24","stock":"primevideomail23@mailpro.live:ddd123456789","requires_code":"0"},{"id":"6","name":"\ud83d\udc99 Disney Plus","description":"Detalhes da Conta:\n\u2022 Assinatura Ativa: Voc\u00ea recebe uma conta com o plano premium j\u00e1 ativado e pronto para usar.\n\n\u2022 Plano Mais Completo: Acesso ao melhor plano dispon\u00edvel no servi\u00e7o de streaming, com todos os recursos liberados.","image":"https:\/\/cdn.ereemby.com\/attachments\/17415781670353140imagem.jpeg","link":"https:\/\/nextsystem.site\/product\/disneyplus","created_id":"1","created_at":"2025-08-14 19:10:50","edited_at":"2025-09-26 12:38:13","stock":"nextsystem002@gmail.com:@Nextsystem111222","requires_code":"1"},{"id":"5","name":"\ud83d\udc9c Hbo Max","description":"Detalhes da Conta:\n\n\u2022 Assinatura Ativa: Voc\u00ea recebe uma conta com o plano premium j\u00e1 ativado e pronto para usar.\n\n\u2022 Plano Mais Completo: Acesso ao melhor plano dispon\u00edvel no servi\u00e7o de streaming, com todos os recursos liberados.","image":"https:\/\/cdn.ereemby.com\/attachments\/17405665474705117imagem.jpeg","link":"https:\/\/nextsystem.site\/product\/hbomax","created_id":"1","created_at":"2025-08-14 19:08:59","edited_at":"2025-10-02 11:01:13","stock":"lexmaldrog+2022@gmail.com:lajumato22","requires_code":"0"},{"id":"4","name":"\ud83d\udc99 Chat GPT","description":"Detalhes da Conta:\n\n\u2022 Assinatura Ativa: Voc\u00ea recebe uma conta com o plano premium j\u00e1 ativado e pronto para usar.\n\n\u2022 Plano Mais Completo: Acesso ao melhor plano dispon\u00edvel no servi\u00e7o de streaming, com todos os recursos liberados.","image":"https:\/\/cdn.ereemby.com\/attachments\/17461246196859897imagem.png","link":"https:\/\/nextsystem.site\/product\/chatgpt","created_id":"1","created_at":"2025-08-14 19:07:49","edited_at":"2025-09-11 12:22:29","stock":"bisharau90414@hotmail.com:If35jK3006R8QtxwB9","requires_code":"1"},{"id":"3","name":"\u2764 COMBATE","description":"Detalhes da Conta:\n\n\u2022 Assinatura Ativa: Voc\u00ea recebe uma conta com o plano premium j\u00e1 ativado e pronto para usar.\n\n\u2022 Plano Mais Completo: Acesso ao melhor plano dispon\u00edvel no servi\u00e7o de streaming, com todos os recursos liberados.","image":"https:\/\/cdn.ereemby.com\/attachments\/17532420154262876imagem.png","link":"https:\/\/nextsystem.site\/product\/combate","created_id":"1","created_at":"2025-08-14 19:05:58","edited_at":"2025-08-14 19:05:58","stock":"xxxxxx:xxxx","requires_code":"0"},{"id":"1","name":"\u2764 Netflix","description":"Detalhes da Conta:\n\n\u2022 Assinatura Ativa: Voc\u00ea recebe uma conta com o plano premium j\u00e1 ativado e pronto para usar.\n\n\u2022 Plano Mais Completo: Acesso ao melhor plano dispon\u00edvel no servi\u00e7o de streaming, com todos os recursos liberados.","image":"https:\/\/cdn.ereemby.com\/attachments\/17405665524735306imagem.jpeg","link":"https:\/\/nextsystem.site\/product\/netflix","created_id":"1","created_at":"2025-08-14 17:44:50","edited_at":"2025-09-24 13:05:16","stock":"mercadosilva1966+ruel@gmail.com:18092025","requires_code":"0"}];
+            const produto = produtos.find(p => p.name === nomeProduto);
+            
+            if (produto && produto.link) {
+                window.open(produto.link, '_blank');
+            } else {
+                openModal('addKeyModal');
+                showToast('Info', `Digite uma nova key para ativar ${nomeProduto} novamente`, 'success');
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const sidebar = document.getElementById('sidebar');
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            
+            if (sidebarToggle) {
+                sidebarToggle.addEventListener('click', function() {
+                    sidebar.classList.toggle('open');
+                });
+            }
+            
+            document.addEventListener('click', function(e) {
+                if (window.innerWidth <= 768) {
+                    if (!sidebar.contains(e.target) && !sidebarToggle.contains(e.target)) {
+                        sidebar.classList.remove('open');
+                    }
+                }
+            });
+        });
+
+        function verificarSessao() {
+            fetch('/api/auth/verify.php', {
+                method: 'POST',
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status !== 'success') {
+                    document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+                    window.location.href = '/';
+                }
+            })
+            .catch(() => {
+                document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+                window.location.href = '/';
+            });
+        }
+
+        setInterval(verificarSessao, 30000);
+
+        function checkCSSLoaded() {
+            const testElement = document.createElement('div');
+            testElement.className = 'bg-emerald-500';
+            testElement.style.position = 'absolute';
+            testElement.style.visibility = 'hidden';
+            document.body.appendChild(testElement);
+            
+            const computedStyle = window.getComputedStyle(testElement);
+            const isLoaded = computedStyle.backgroundColor === 'rgb(16, 185, 129)';
+            
+            document.body.removeChild(testElement);
+            return isLoaded;
+        }
+
+        function showContent() {
+            const loadingScreen = document.getElementById('loadingScreen');
+            const mainContent = document.getElementById('mainContent');
+            
+            if (checkCSSLoaded()) {
+                loadingScreen.style.opacity = '0';
+                mainContent.classList.add('loaded');
+                
+                setTimeout(() => {
+                    loadingScreen.style.display = 'none';
+                }, 500);
+            } else {
+                setTimeout(showContent, 100);
+            }
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', showContent);
+        } else {
+            showContent();
+        }
+    </script>
+    </div>
+</bod
+</html>
